@@ -6,7 +6,7 @@ STACK=${STACK:-Backup}
 SERVICE=${SERVICE:-rsyncd}
 
 SOURCE=${SOURCE:-volume}
-RETENT=${RETENT:-7}
+RETAIN=${RETAIN:-7}
 
 # Count all rsyncd containers
 CONTAINERS_URL="http://$METADATA/2015-12-19/stacks/$STACK/services/$SERVICE/containers"
@@ -25,8 +25,8 @@ curl -s "$CONTAINERS_URL" | sed 's/=.*$/ /g' | while read container; do
     cd "$NAME"
 
     # Move old backups out of the way (rsnapshot style)
-    [ -e "$RETENT" ] && rm -rf "$RETENT"
-    seq "$RETENT" -1 0 | while read i; do
+    [ -e "$RETAIN" ] && rm -rf "$RETAIN"
+    seq "$RETAIN" -1 0 | while read i; do
         if [ -e "$i" ]; then
             echo "Moving ./$i to ./$((i+1))"
             mv "$i" "$((i+1))"

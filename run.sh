@@ -54,6 +54,9 @@ curl -s "$CONTAINERS_URL" | sed 's/=.*$/ /g' | while read container; do
             fi
         done
         mv "./tmp" "./0"
+
+        # Run rsnapshot-diff to compare backups
+        rsnapshot-diff -H "./0" "./1"
     else
         echo "Failed! (exit code: $?)"
 

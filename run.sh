@@ -24,21 +24,13 @@ curl -s "$CONTAINERS_URL" | sed 's/=.*$/ /g' | while read container; do
     [ ! -e "$NAME" ] && mkdir "$NAME"
     cd "$NAME"
 
-    # Move old backups out of the way (rsnapshot style)
-    [ -e "$RETAIN" ] && rm -rf "$RETAIN"
-    seq "$RETAIN" -1 0 | while read i; do
-        if [ -e "$i" ]; then
-            echo "Moving ./$i to ./$((i+1))"
-            mv "$i" "$((i+1))"
-        fi
-    done
-
-    if [ -e "1" ]; then
-        echo "Hard-linking ./1 to ./0"
-        cp -rl "1" "0"
+    # Create new snapshot (rsnapshot style)
+    if [ -e "./0" ]; then
+        echo "Hard-linking ./0 to ./tmp"
+        cp -rl "./0" "./tmp"
     else
-        echo "Creating ./0"
-        mkdir "0"
+        echo "Creating ./tmp"
+        mkdir "./tmp"
     fi
 
     # Build a list of excludes
@@ -47,10 +39,27 @@ curl -s "$CONTAINERS_URL" | sed 's/=.*$/ /g' | while read container; do
         EXCLUDES="$EXCLUDES --exclude $i"
     done
 
-    # Rsync all remote files with "0"
-    echo "Syncing ./0 with remote server"
-    time rsync -avrhx --delete $EXCLUDES --delete-excluded "rsync://$IP/$SOURCE" "0/"
-    echo "Done! (exit code: $?)"
+    # Rsync all remote files with "./tmp"
+    echo "Syncing ./tmp with remote server"
+    if time rsync -arx --delete $EXCLUDES --delete-excluded "rsync://$IP/$SOURCE" "tmp/"
+    then
+        echo "Done! (exit code: $?)"
+
+        # Move old backups out of the way
+        [ -e "$RETAIN" ] && rm -rf "$RETAIN"
+        seq "$RETAIN" -1 0 | while read i; do
+            if [ -e "$i" ]; then
+                echo "Moving ./$i to ./$((i+1))"
+                mv "$i" "$((i+1))"
+            fi
+        done
+        mv "./tmp" "./0"
+    else
+        echo "Failed! (exit code: $?)"
+
+        # Remove failed snapshot
+        rm -rf "./tmp"
+    fi
 
     # Return back
     cd ..

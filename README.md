@@ -1,4 +1,4 @@
-# Rancher automatic rsync service [![](https://images.microbadger.com/badges/image/thedrhax/rancher-rsync.svg)](https://hub.docker.com/r/thedrhax/rancher-rsync)
+# Rancher automatic rsync service [![](https://images.microbadger.com/badges/image/thedrhax/rancher-rsync-client.svg)](https://hub.docker.com/r/thedrhax/rancher-rsync-client)
 
 This service collects files from all rsync daemons running in a specific stack (`$STACK`) and service (`$SERVICE`). It uses Rancher Metadata (`$METADATA`) service to discover running rsync daemons automatically. So you can simply replicate rsync daemon to all your hosts and backup `/var/lib/docker/volumes` automatically :)
 
